@@ -292,6 +292,15 @@ public class MakeCubePuzzle {
 		
 	}
 	
+	private static boolean[][] flip(boolean[][] in) {
+		boolean[][] res = new boolean[in.length][in[0].length];
+		for(int i = 0; i < in.length; i++) {
+			for(int j = 0; j < in.length; j++) {
+				res[in.length-1-i][j]=in[i][j];
+			}
+		}
+		return res;
+	}
 	
 	private static boolean[][] rotateLeft(boolean[][] in, int cnt) {
 		if (cnt == 0) return in;
@@ -310,13 +319,16 @@ public class MakeCubePuzzle {
 		final List<Piece> pcsVar = new ArrayList<Piece>();
 		
 		int[] goodCmb = null;
-		for(int var = 0; goodCmb == null && var < 4096 /* 4^6 */; var++) {
+		for(int var = 0; goodCmb == null && var < (4096 /* 4^6 */ * 64 /*  2^6 two sides */ ); var++) {
 			pcsVar.clear();
 			int varLocal = var;
 			for(int i = 0; i < fList.size(); i++) {
 				boolean[][] figure = fList.get(i);
-				pcsVar.add(new Piece(rotateLeft(figure, varLocal % 4)));
+				boolean[][] newFigure = rotateLeft(figure, varLocal % 4);
 				varLocal /= 4;
+				newFigure = (varLocal % 2 == 0) ? newFigure : flip(newFigure);
+				varLocal /= 2;
+				pcsVar.add(new Piece(newFigure));
 			}
 			
 			for(int i = 0; i < pcsVar.size(); i++) {
@@ -339,7 +351,7 @@ public class MakeCubePuzzle {
 			}
 			goodCmb = findCubeCombination(figures, pcsVar);
 		}
-//		if (goodCmb == null) throw new IllegalStateException("No solution found, contradicts to the task requirement contract");
+		if (goodCmb == null) throw new IllegalStateException("No solution found, contradicts to the task requirement contract");
 		
 		StringBuilder res = new StringBuilder();
 		
@@ -350,7 +362,7 @@ public class MakeCubePuzzle {
 				{null,	5, 	null}}) {
 			StringBuilder sb = new StringBuilder();
 			for(Integer i : iarr) {
-				sb.append(i == null ? emptyCubeStr : toString(pcsVar.get(goodCmb[i+0]).figure));
+				sb.append(i == null ? emptyCubeStr : toString(pcsVar.get(goodCmb[i]).figure));
 			}
 			res.append(makeColumns(sb.toString(), 5)).append(SEP);
 		}
@@ -375,7 +387,7 @@ public class MakeCubePuzzle {
 					fits = false;
 					break;
 				}
-				System.out.print(""); //for debug bp
+//				System.out.print(""); //for debug bp
 			}
 			if (!fits) continue;
 			for(CornerCtx c : corners) {
@@ -386,8 +398,9 @@ public class MakeCubePuzzle {
 					fits = false;
 					break;
 				}
-				System.out.print(""); //for debug bp
+//				System.out.print(""); //for debug bp
 			}
+			if (!fits) continue;
 			goodCmb = comb;
 			break;
 		}
@@ -461,7 +474,7 @@ public class MakeCubePuzzle {
 				sBuf.append(toString(figure)).append(SEP);
 			}
 			System.out.println(makeColumns(sBuf.toString(), 6));
-			break;
+			//break;
 		}
 		
 		i = 0;
@@ -471,7 +484,7 @@ public class MakeCubePuzzle {
 			System.out.println(makeCube(set));
 			long endTime = System.currentTimeMillis();
 			System.out.println(String.format("it took %s ms to find sulution for %s figures", endTime - startTime, COLORS[i++]));
-			break;
+			//break;
 		}
 	}
 	
