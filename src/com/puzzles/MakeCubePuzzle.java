@@ -6,6 +6,8 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -170,37 +172,62 @@ public class MakeCubePuzzle {
 	}
 	
 
-	final static List<int[]> allCombs = new LinkedList<int[]>();
+	final static Set<int[]> allCombs = new HashSet<int[]>(30);
 	static {
 		Set<Integer> allDigs = new HashSet<Integer>();
 		for(int i = 0; i < 6; i++) {
 			int[] ar = new int[6];
 			allDigs.add(ar[0] = i);
-			allCombs.add(ar);
+//			allCombs.add(ar);
 		}
 		
-		for(int i = 1; i < 6; i++) {
-			for(int[] ar : new HashSet<int[]>(allCombs)) {
-				Set<Integer> digs = new HashSet<Integer>();
-				for(int j = 0; j < i; j++) {
-					digs.add(ar[j]);
-				}
-				Set<Integer> restDigs = new HashSet<Integer>(allDigs);
-				restDigs.removeAll(digs);
-				List<Integer> restDList = new ArrayList<Integer>(restDigs);
-				ar[i] = restDList.get(0);
-				for(int k = 1; k < restDList.size(); k++) {
-					int[] ar2 = new int[6];
-					System.arraycopy(ar, 0, ar2, 0, i);
-					ar2[i] = restDList.get(k);
-					allCombs.add(ar2);
-				}
-				
+		List<String> combsS = new LinkedList<String>();
+		for(int i = 0; i < 30; i++) {
+			int[] ar = new int[6];
+			int var = i;
+			ar[5] = 1 + i % 5;
+			var /= 5;
+			Set<Integer> restDigs = new HashSet<Integer>(allDigs);
+			restDigs.remove(0);
+			restDigs.remove(ar[5]);
+			ar[4] = Collections.min(restDigs);
+			restDigs.remove(ar[4]);
+			List<Integer> restDigsL = new ArrayList<Integer>(restDigs);
+			Collections.sort(restDigsL);
+			for(int j = 0; j < 3; j++) {
+				ar[j + 1] = restDigsL.remove(var % (3 - j));
+				var /= 3 - j;
 			}
+			allCombs.add(ar);
+			StringBuilder sb = new StringBuilder();
+			Arrays.stream(ar).forEach( e -> sb.append(e));
+			combsS.add(sb.toString());
 		}
-//		if (allCombs.size() != 720 /* 6! */) {
-//			System.err.println("Error - wrong amount of combinations generated");
+		combsS.stream().forEach(System.out::println);
+		if (new HashSet<String>(combsS).size() != 30) {
+			throw new IllegalStateException("Error - wrong amount of combinations generated");
+		}
+		
+//		for(int i = 1; i < 6; i++) {
+//			for(int[] ar : new HashSet<int[]>(allCombs)) {
+//				Set<Integer> digs = new HashSet<Integer>();
+//				for(int j = 0; j < i; j++) {
+//					digs.add(ar[j]);
+//				}
+//				Set<Integer> restDigs = new HashSet<Integer>(allDigs);
+//				restDigs.removeAll(digs);
+//				List<Integer> restDList = new ArrayList<Integer>(restDigs);
+//				ar[i] = restDList.get(0);
+//				for(int k = 1; k < restDList.size(); k++) {
+//					int[] ar2 = new int[6];
+//					System.arraycopy(ar, 0, ar2, 0, i);
+//					ar2[i] = restDList.get(k);
+//					allCombs.add(ar2);
+//				}
+//				
+//			}
 //		}
+
 	}
 
 	//░░░░░
